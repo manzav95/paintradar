@@ -1,0 +1,8 @@
+export { calculateLeadScore } from '@/services/leads/calculateLeadScore'
+export { classifyLead, createClassifier, mockClassify } from '@/services/leads/classifyLead'
+export { detectDuplicate } from '@/services/leads/detectDuplicate'
+export { handleIngest } from '@/services/leads/ingestApi'
+export { normalizeLead } from '@/services/leads/normalizeLead'
+export { createProcessContext, processLead } from '@/services/leads/processLead'
+export { fetchRemoteLeads, saveLead } from '@/services/leads/saveLead'
+export { toDashboardLead } from '@/services/leads/toDashboardLead'
