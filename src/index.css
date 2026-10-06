@@ -173,3 +173,20 @@ body::before {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #1a1406 !important;
+  }
+
+  body::before,
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-document {
+    background: #fff !important;
+    padding: 0 !important;
+  }
+}

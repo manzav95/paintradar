@@ -14,8 +14,16 @@ const PAGES = [
   { label: 'Analytics', to: '/analytics' },
   { label: 'Saved Leads', to: '/saved' },
   { label: 'Searches', to: '/searches' },
-  { label: 'Materials', to: '/materials' },
-  { label: 'Client Quote', to: '/quote' },
+  { label: 'Cabinet Kits', to: '/materials' },
+  { label: 'Cabinet Quote', to: '/quote' },
+  { label: 'Estimates', to: '/sales/estimates' },
+  { label: 'Quotes', to: '/sales/quotes' },
+  { label: 'Invoices', to: '/sales/invoices' },
+  { label: 'Customers', to: '/sales/customers' },
+  { label: 'Pricing', to: '/sales/pricing' },
+  { label: 'Sales Materials', to: '/sales/materials' },
+  { label: 'Payments', to: '/sales/payments' },
+  { label: 'Change Orders', to: '/sales/change-orders' },
   { label: 'Sources', to: '/sources' },
   { label: 'Lead Tester', to: '/dev/tester' },
   { label: 'Source Status', to: '/dev/sources' },
@@ -24,20 +32,24 @@ const PAGES = [
 ]
 
 export function CommandPalette() {
-  const { commandOpen, setCommandOpen, leads, setSelectedLeadId, setFilters } = useAppState()
+  const { commandOpen, setCommandOpen, leads, setSelectedLeadId, setFilters, settings } = useAppState()
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const q = query.toLowerCase()
 
   const results = useMemo(() => {
-    const pages = PAGES.filter((page) => page.label.toLowerCase().includes(q))
+    const pages = PAGES.filter((page) => {
+      const leadPage = !['Estimates', 'Quotes', 'Invoices', 'Customers', 'Pricing', 'Sales Materials', 'Payments', 'Change Orders', 'Settings'].includes(page.label)
+      if (!settings.showLeadIntel && leadPage) return false
+      return page.label.toLowerCase().includes(q)
+    })
     const cities = EAST_BAY_CITIES.filter((city) => city.name.toLowerCase().includes(q))
     const services = PROJECT_CATEGORIES.filter((category) => CATEGORY_LABELS[category].toLowerCase().includes(q))
     const matchedLeads = leads
       .filter((lead) => `${lead.customerName} ${lead.city} ${lead.title}`.toLowerCase().includes(q))
       .slice(0, 6)
     return { pages, cities, services, matchedLeads }
-  }, [leads, q])
+  }, [leads, q, settings.showLeadIntel])
 
   const go = (to: string) => {
     navigate(to)
@@ -46,10 +58,15 @@ export function CommandPalette() {
   }
 
   return (
-    <Modal open={commandOpen} title="Jump anywhere" subtitle="Search leads, cities, services, or pages" onClose={() => setCommandOpen(false)}>
+    <Modal
+      open={commandOpen}
+      title="Jump anywhere"
+      subtitle={settings.showLeadIntel ? 'Search leads, cities, services, or pages' : 'Search estimates, invoices, customers, or pages'}
+      onClose={() => setCommandOpen(false)}
+    >
       <Input
         autoFocus
-        placeholder="Type a city, service, or homeowner..."
+        placeholder={settings.showLeadIntel ? 'Type a city, service, or homeowner...' : 'Type a customer, estimate, or page...'}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
@@ -61,6 +78,8 @@ export function CommandPalette() {
             </button>
           ))}
         </Group>
+        {settings.showLeadIntel ? (
+        <>
         <Group title="Leads">
           {results.matchedLeads.map((lead) => (
             <button
@@ -103,6 +122,8 @@ export function CommandPalette() {
             </button>
           ))}
         </Group>
+        </>
+        ) : null}
       </div>
     </Modal>
   )

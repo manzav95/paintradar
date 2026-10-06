@@ -36,6 +36,7 @@ export function createDefaultSettings(partial?: Partial<AppSettings>): AppSettin
     notificationPreferences: { ...DEFAULT_NOTIFICATIONS },
     theme: 'dark',
     onboarded: false,
+    showLeadIntel: false,
     minimumLeadScore: 40,
     createdAt: new Date().toISOString(),
     ...partial,

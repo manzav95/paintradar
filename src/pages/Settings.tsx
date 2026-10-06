@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { EAST_BAY_CITIES } from '@/data/cities'
+import { APP_NAME, LEAD_APP_NAME, LEAD_APP_TAGLINE } from '@/lib/brand'
 import { Field, Input, Select } from '@/components/ui/Input'
 import { Switch } from '@/components/ui/Switch'
 import { useAppState } from '@/providers/AppState'
@@ -15,9 +16,27 @@ export function Settings() {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted">Tune the radar to how your crew actually works.</p>
+        <p className="text-sm text-muted">{APP_NAME} is built for estimates, invoices, and payment tracking.</p>
       </div>
 
+      <Section title="Product">
+        <Field label="Company name" className="max-w-sm">
+          <Input value={settings.companyName} onChange={(event) => updateSettings({ companyName: event.target.value })} />
+        </Field>
+        <div className="mt-5 rounded-2xl border border-line bg-bg-soft px-4 py-4">
+          <Switch
+            checked={settings.showLeadIntel}
+            onChange={(showLeadIntel) => updateSettings({ showLeadIntel })}
+            label={`Show ${LEAD_APP_NAME} (${LEAD_APP_TAGLINE.toLowerCase()})`}
+          />
+          <p className="mt-2 text-sm text-muted">
+            {APP_NAME} stays the main app. Turn this on only when you want the old {LEAD_APP_NAME} lead tools back in the sidebar.
+          </p>
+        </div>
+      </Section>
+
+      {settings.showLeadIntel ? (
+        <>
       <Section title="Search area">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Home location">
@@ -109,11 +128,11 @@ export function Settings() {
         </div>
       </Section>
 
+        </>
+      ) : null}
+
       <Section title="Appearance">
         <p className="text-sm text-muted">Dark contractor theme is locked for this workspace. Depth, glass, and gold stay on.</p>
-        <Field label="Company name" className="mt-4 max-w-sm">
-          <Input value={settings.companyName} onChange={(event) => updateSettings({ companyName: event.target.value })} />
-        </Field>
       </Section>
     </motion.div>
   )

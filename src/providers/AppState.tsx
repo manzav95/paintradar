@@ -130,7 +130,12 @@ function readPersisted() {
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const persisted = useMemo(() => readPersisted(), [])
-  const [settings, setSettings] = useState<AppSettings>(() => persisted?.settings ?? createDefaultSettings())
+  const [settings, setSettings] = useState<AppSettings>(() =>
+    createDefaultSettings({
+      ...persisted?.settings,
+      showLeadIntel: persisted?.settings?.showLeadIntel ?? false,
+    }),
+  )
   const [leads, setLeads] = useState<Lead[]>(() =>
     (persisted?.leads ?? [])
       .filter((lead) => lead.source !== 'demo')
@@ -378,8 +383,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     updateSettings({ ...next, onboarded: true })
     void seedIfNeeded()
     pushToast({
-      title: 'Radar is live',
-      description: 'Monitoring homeowner painting requests in your service area.',
+      title: 'PaintLedger is ready',
+      description: 'Start an estimate or open a customer.',
       tone: 'success',
     })
   }, [pushToast, seedIfNeeded, updateSettings])

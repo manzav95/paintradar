@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Header } from '@/components/layout/Header'
@@ -8,12 +8,26 @@ import { LeadDrawer } from '@/components/leads/LeadDrawer'
 import { CommandPalette } from '@/components/layout/CommandPalette'
 import { NotificationToast } from '@/components/ui/Toast'
 import { ScannerOverlay } from '@/components/ui/Skeleton'
+import { APP_NAME, APP_TAGLINE, isLeadPath } from '@/lib/brand'
 import { useAppState } from '@/providers/AppState'
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
-  const { mobileNavOpen, setMobileNavOpen, setCommandOpen, scan, hydrated } = useAppState()
+  const location = useLocation()
+  const { mobileNavOpen, setMobileNavOpen, setCommandOpen, scan, hydrated, settings } = useAppState()
+  const onSales = location.pathname.startsWith('/sales')
+  const leadIntel = settings.showLeadIntel
+
+  useEffect(() => {
+    document.title = `${APP_NAME} — ${APP_TAGLINE}`
+  }, [])
+
+  useEffect(() => {
+    if (!settings.showLeadIntel && isLeadPath(location.pathname)) {
+      navigate('/sales/estimates', { replace: true })
+    }
+  }, [location.pathname, navigate, settings.showLeadIntel])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -59,14 +73,16 @@ export function AppLayout() {
           )}
         </main>
       </div>
-      <button
-        onClick={() => navigate('/quote')}
-        className="fixed right-5 bottom-5 z-40 flex h-14 items-center gap-2 rounded-full bg-gold px-5 font-semibold text-[#1a1406] shadow-[0_12px_30px_rgba(232,180,74,0.28)]"
-      >
-        <Plus className="h-5 w-5" />
-        Add Lead
-      </button>
-      <LeadDrawer />
+      {leadIntel && !onSales ? (
+        <button
+          onClick={() => navigate('/quote')}
+          className="fixed right-5 bottom-5 z-40 flex h-14 items-center gap-2 rounded-full bg-gold px-5 font-semibold text-[#1a1406] shadow-[0_12px_30px_rgba(232,180,74,0.28)]"
+        >
+          <Plus className="h-5 w-5" />
+          Add Lead
+        </button>
+      ) : null}
+      {leadIntel ? <LeadDrawer /> : null}
       <CommandPalette />
       <NotificationToast />
       <ScannerOverlay visible={scan.scanning && !hydrated} />

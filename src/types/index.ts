@@ -200,6 +200,7 @@ export interface AppSettings {
   notificationPreferences: NotificationPreferences
   theme: 'dark'
   onboarded: boolean
+  showLeadIntel: boolean
   minimumLeadScore: number
   createdAt: string
 }
