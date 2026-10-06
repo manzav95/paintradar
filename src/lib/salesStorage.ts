@@ -25,6 +25,7 @@ export interface SalesState {
   pricing: PricingSnapshot
   catalog: CatalogMaterial[]
   business: BusinessSalesSettings
+  savedAt?: string
 }
 
 export function loadSalesState(): SalesState | null {
@@ -128,5 +129,30 @@ export function normalizeSalesState(state: SalesState): SalesState {
       lineItems: item.lineItems ?? [],
     })),
     changeOrders: state.changeOrders ?? [],
+    savedAt: state.savedAt,
   }
+}
+
+export function stampSalesState(state: SalesState): SalesState {
+  return { ...state, savedAt: new Date().toISOString() }
+}
+
+export function salesSavedAtMs(state: SalesState | null | undefined) {
+  if (!state?.savedAt) return 0
+  const value = Date.parse(state.savedAt)
+  return Number.isFinite(value) ? value : 0
+}
+
+export function pickSalesState(local: SalesState | null, cloud: SalesState | null) {
+  const localWork = (local?.customers.length ?? 0) + (local?.estimates.length ?? 0) + (local?.invoices.length ?? 0)
+  const cloudWork = (cloud?.customers.length ?? 0) + (cloud?.estimates.length ?? 0) + (cloud?.invoices.length ?? 0)
+  if (!cloud && local) return { state: local, upload: localWork > 0 }
+  if (cloud && localWork === 0) return { state: cloud, upload: false }
+  if (local && cloud) {
+    const localMs = salesSavedAtMs(local)
+    const cloudMs = salesSavedAtMs(cloud)
+    const localWins = localMs > cloudMs || (!localMs && localWork >= cloudWork)
+    return localWins ? { state: local, upload: true } : { state: cloud, upload: false }
+  }
+  return { state: local, upload: false }
 }

@@ -23,7 +23,8 @@ import {
 } from '@/data/pricingDefaults'
 import { uid } from '@/lib/format'
 import { nextDocumentNumber, normalizeLegacyPercent } from '@/lib/money'
-import { loadSalesState, saveSalesState } from '@/lib/salesStorage'
+import { loadSalesCloud, saveSalesCloud, isSalesCloudConfigured } from '@/lib/salesCloud'
+import { loadSalesState, pickSalesState, saveSalesState, stampSalesState, type SalesState } from '@/lib/salesStorage'
 import type {
   AddonKind,
   BusinessSalesSettings,
@@ -52,6 +53,7 @@ interface SalesContextValue {
   catalog: CatalogMaterial[]
   business: BusinessSalesSettings
   saveStatus: 'saved' | 'saving' | 'pending'
+  cloudSync: 'cloud' | 'local' | 'offline'
   upsertCustomer: (input: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => Customer
   deleteCustomer: (id: string) => void
   createEstimate: (customerId: string, type?: Estimate['type'], customer?: Customer, jobName?: string) => Estimate
@@ -160,7 +162,43 @@ export function SalesStateProvider({ children }: { children: ReactNode }) {
   const [catalog, setCatalog] = useState<CatalogMaterial[]>(() => persisted?.catalog ?? createDefaultCatalog())
   const [business, setBusiness] = useState<BusinessSalesSettings>(() => persisted?.business ?? createDefaultBusinessSettings())
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'pending'>('saved')
+  const [syncReady, setSyncReady] = useState(!isSalesCloudConfigured())
+  const [cloudSync, setCloudSync] = useState<'cloud' | 'local' | 'offline'>(isSalesCloudConfigured() ? 'cloud' : 'local')
   const timer = useRef<number | null>(null)
+
+  const applyState = useCallback((state: SalesState) => {
+    setCustomers(state.customers)
+    setEstimates(state.estimates)
+    setInvoices(state.invoices)
+    setChangeOrders(state.changeOrders)
+    setPayments(state.payments)
+    setPricing(state.pricing)
+    setCatalog(state.catalog)
+    setBusiness(state.business)
+  }, [])
+
+  useEffect(() => {
+    if (!isSalesCloudConfigured()) return
+    let cancelled = false
+    const local = persisted
+    void (async () => {
+      try {
+        const cloud = await loadSalesCloud()
+        if (cancelled) return
+        const picked = pickSalesState(local, cloud)
+        if (picked.state) applyState(picked.state)
+        if (picked.upload && picked.state) await saveSalesCloud(stampSalesState(picked.state))
+        setCloudSync('cloud')
+      } catch {
+        if (!cancelled) setCloudSync('offline')
+      } finally {
+        if (!cancelled) setSyncReady(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [applyState, persisted])
 
   useEffect(() => {
     setPricing((current) => ({
@@ -254,17 +292,40 @@ export function SalesStateProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    if (!syncReady) return
     setSaveStatus('pending')
     if (timer.current) window.clearTimeout(timer.current)
     timer.current = window.setTimeout(() => {
       setSaveStatus('saving')
-      saveSalesState({ customers, estimates, invoices, changeOrders, payments, pricing, catalog, business })
-      setSaveStatus('saved')
+      const snapshot = stampSalesState({
+        customers,
+        estimates,
+        invoices,
+        changeOrders,
+        payments,
+        pricing,
+        catalog,
+        business,
+      })
+      saveSalesState(snapshot)
+      if (!isSalesCloudConfigured()) {
+        setSaveStatus('saved')
+        return
+      }
+      void saveSalesCloud(snapshot)
+        .then(() => {
+          setCloudSync('cloud')
+          setSaveStatus('saved')
+        })
+        .catch(() => {
+          setCloudSync('offline')
+          setSaveStatus('pending')
+        })
     }, 350)
     return () => {
       if (timer.current) window.clearTimeout(timer.current)
     }
-  }, [business, catalog, changeOrders, customers, estimates, invoices, payments, pricing])
+  }, [business, catalog, changeOrders, customers, estimates, invoices, payments, pricing, syncReady])
 
   const upsertCustomer = useCallback((input: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
     const next = emptyCustomer(input)
@@ -745,6 +806,7 @@ export function SalesStateProvider({ children }: { children: ReactNode }) {
     catalog,
     business,
     saveStatus,
+    cloudSync,
     upsertCustomer,
     deleteCustomer,
     createEstimate,

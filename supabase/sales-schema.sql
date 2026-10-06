@@ -161,6 +161,22 @@ create table if not exists public.change_orders (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.sales_workspaces (
+  id text primary key,
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.sales_workspaces enable row level security;
+
+drop policy if exists "sales workspace read" on public.sales_workspaces;
+drop policy if exists "sales workspace write" on public.sales_workspaces;
+create policy "sales workspace read" on public.sales_workspaces
+  for select to anon, authenticated using (true);
+create policy "sales workspace write" on public.sales_workspaces
+  for all to anon, authenticated using (true) with check (true);
+grant select, insert, update, delete on table public.sales_workspaces to anon, authenticated;
+
 alter table public.customers enable row level security;
 alter table public.pricing_settings enable row level security;
 alter table public.business_settings enable row level security;

@@ -72,6 +72,7 @@ export function EstimateBuilder() {
     catalog,
     changeOrders,
     saveStatus,
+    cloudSync,
     addRoom,
     updateRoom,
     duplicateRoom,
@@ -145,7 +146,15 @@ export function EstimateBuilder() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full border border-line px-3 py-1 text-xs text-muted">
-            {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Offline changes pending'}
+            {saveStatus === 'saved'
+              ? cloudSync === 'cloud'
+                ? 'Saved to cloud'
+                : 'Saved on this device'
+              : saveStatus === 'saving'
+                ? 'Saving...'
+                : cloudSync === 'offline'
+                  ? 'Saved on this device'
+                  : 'Offline changes pending'}
           </span>
           <Button size="sm" onClick={() => navigate(`/sales/jobs/${estimate.id}`)}>
             Job

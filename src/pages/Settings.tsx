@@ -5,12 +5,16 @@ import { APP_NAME, LEAD_APP_NAME, LEAD_APP_TAGLINE } from '@/lib/brand'
 import { Field, Input, Select } from '@/components/ui/Input'
 import { Switch } from '@/components/ui/Switch'
 import { useAppState } from '@/providers/AppState'
+import { useSales } from '@/providers/SalesState'
+import { isSalesCloudConfigured } from '@/lib/salesCloud'
 import { RADIUS_OPTIONS, type RadiusOption } from '@/types'
 
 export function Settings() {
   const { settings, updateSettings } = useAppState()
+  const { cloudSync } = useSales()
   const weights = settings.scoringWeights
   const prefs = settings.notificationPreferences
+  const cloudOn = isSalesCloudConfigured()
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -18,6 +22,19 @@ export function Settings() {
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-sm text-muted">{APP_NAME} is built for estimates, invoices, and payment tracking.</p>
       </div>
+
+      <Section title="Cloud backup">
+        <p className="text-sm text-muted">
+          {cloudOn
+            ? cloudSync === 'cloud'
+              ? 'Invoices, estimates, customers, materials, and pricing are saving to Supabase. The same records load on Netlify, this laptop, and other browsers.'
+              : 'Supabase is configured, but the last save stayed on this device. Check the connection and save again.'
+            : 'This browser still keeps a local copy. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify (same values as this laptop) so the live app sees the same invoices and materials.'}
+        </p>
+        <p className="mt-2 text-xs uppercase tracking-[0.16em] text-gold">
+          {cloudOn ? (cloudSync === 'cloud' ? 'Connected' : 'Offline') : 'Not configured on this build'}
+        </p>
+      </Section>
 
       <Section title="Product">
         <Field label="Company name" className="max-w-sm">
