@@ -5,13 +5,11 @@ import type { EstimateTotals } from '@/types/sales'
 
 export function LiveTotalBar({ totals, compact }: { totals: EstimateTotals; compact?: boolean }) {
   const paint = paintMaterialLine(totals)
-  const rows = [
-    ['Labor', totals.laborCents],
-    paint ? ([`Paint Material · ${paint.detail}`, paint.cents] as const) : null,
-    ['Prep Materials', totals.prepMaterialCents],
-    totals.extrasCents ? (['Extras', totals.extrasCents] as const) : null,
-    totals.discountCents ? (['Discounts', -totals.discountCents] as const) : null,
-  ].filter((row): row is readonly [string, number] => Boolean(row))
+  const rows: [string, number][] = [['Labor', totals.laborCents]]
+  if (paint) rows.push([`Paint Material · ${paint.detail}`, paint.cents])
+  rows.push(['Prep Materials', totals.prepMaterialCents])
+  if (totals.extrasCents) rows.push(['Extras', totals.extrasCents])
+  if (totals.discountCents) rows.push(['Discounts', -totals.discountCents])
 
   return (
     <div className="rounded-3xl border border-gold/20 bg-[#14110a] p-5 shadow-card">

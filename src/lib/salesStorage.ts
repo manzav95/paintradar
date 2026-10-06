@@ -76,7 +76,7 @@ function normalizeAddon(addon: EstimateAddon): EstimateAddon {
 }
 
 function normalizeRates(rates: PricingSnapshot): PricingSnapshot {
-  return {
+  return withScopeRates({
     ...rates,
     wasteFactor: normalizeLegacyPercent(rates.wasteFactor),
     paintMarkup: normalizeLegacyPercent(rates.paintMarkup),
@@ -85,8 +85,7 @@ function normalizeRates(rates: PricingSnapshot): PricingSnapshot {
     stairRiserCents: rates.stairRiserCents ?? 1500,
     handrailLfCents: rates.handrailLfCents ?? 650,
     closetBuiltInCents: rates.closetBuiltInCents ?? 22500,
-    ...withScopeRates(rates),
-  }
+  })
 }
 
 export function normalizeSalesState(state: SalesState): SalesState {

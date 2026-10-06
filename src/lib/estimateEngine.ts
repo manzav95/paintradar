@@ -190,8 +190,9 @@ export function exteriorPricing(scope: ExteriorScope | null | undefined, rates: 
 }
 
 export function cabinetPricing(scope: CabinetScope | null | undefined, rates: PricingSnapshot) {
+  type CabinetLine = { label: string; detail: string; cents: number; note?: string; includesMaterial?: boolean }
   if (!scope) {
-    return { laborCents: 0, lines: [] as { label: string; detail: string; cents: number; note?: string; includesMaterial?: boolean }[] }
+    return { laborCents: 0, lines: [] as CabinetLine[] }
   }
   const doorRate = scope.doorPriceCents ?? rates.cabinetDoorCents ?? 6500
   const drawerRate = scope.drawerPriceCents ?? rates.cabinetDrawerCents ?? 3500
@@ -205,19 +206,22 @@ export function cabinetPricing(scope: CabinetScope | null | undefined, rates: Pr
     doorQty ? `${doorQty} door${doorQty === 1 ? '' : 's'} @ ${formatCents(doorRate)}` : null,
     drawerQty ? `${drawerQty} drawer${drawerQty === 1 ? '' : 's'} @ ${formatCents(drawerRate)}` : null,
   ].filter(Boolean)
-  const lines = [
-    doorCents + drawerCents > 0
-      ? {
-          label: scope.scope || 'Cabinets',
-          detail: qtyParts.join(' · '),
-          cents: doorCents + drawerCents,
-          includesMaterial: true,
-          note: 'Paint is included in price',
-        }
-      : null,
-    scope.boxes ? { label: 'Cabinet Boxes', detail: `${doorQty} boxes`, cents: boxCents } : null,
-    scope.island ? { label: 'Island', detail: 'Included', cents: islandCents } : null,
-  ].filter((line): line is { label: string; detail: string; cents: number; note?: string; includesMaterial?: boolean } => Boolean(line) && line.cents > 0)
+  const lines: CabinetLine[] = []
+  if (doorCents + drawerCents > 0) {
+    lines.push({
+      label: scope.scope || 'Cabinets',
+      detail: qtyParts.join(' · '),
+      cents: doorCents + drawerCents,
+      includesMaterial: true,
+      note: 'Paint is included in price',
+    })
+  }
+  if (scope.boxes && boxCents > 0) {
+    lines.push({ label: 'Cabinet Boxes', detail: `${doorQty} boxes`, cents: boxCents })
+  }
+  if (scope.island && islandCents > 0) {
+    lines.push({ label: 'Island', detail: 'Included', cents: islandCents })
+  }
   return { laborCents: doorCents + drawerCents + boxCents + islandCents, lines }
 }
 
@@ -545,7 +549,7 @@ function includeColorGroup(type: EstimateType | undefined, group: 'interior' | '
 
 export function colorSummaryLines(colors?: EstimateColors | null, type?: EstimateType) {
   if (!colors) return []
-  const lines: string[] = []
+  const lines: (string | null)[] = []
   if (includeColorGroup(type, 'interior') && colors.interior) {
     lines.push(
       choiceLine('Walls', colors.interior.walls),

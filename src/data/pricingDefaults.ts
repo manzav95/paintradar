@@ -185,7 +185,7 @@ function asChoice(value: unknown): ColorChoice {
     const item = value as ColorChoice
     return { color: item.color ?? '', sheen: item.sheen ?? '', productId: item.productId ?? '', productName: item.productName ?? '' }
   }
-  if (typeof value === 'string') return { color: value, sheen: '' }
+  if (typeof value === 'string') return { color: value, sheen: '', productId: '', productName: '' }
   return blankChoice()
 }
 
