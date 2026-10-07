@@ -1,4 +1,5 @@
-import { createDefaultCabinets, createDefaultExterior, DEFAULT_REPAIR_LEVEL_CENTS, normalizeColors, withScopeRates } from '@/data/pricingDefaults'
+import { createDefaultCabinets, createDefaultBusinessSettings, createDefaultExterior, DEFAULT_REPAIR_LEVEL_CENTS, normalizeColors, withScopeRates } from '@/data/pricingDefaults'
+import { COMPANY_NAME } from '@/lib/brand'
 import { normalizeLegacyPercent } from '@/lib/money'
 import {
   HEIGHT_PRESETS,
@@ -129,6 +130,10 @@ export function normalizeSalesState(state: SalesState): SalesState {
       lineItems: item.lineItems ?? [],
     })),
     changeOrders: state.changeOrders ?? [],
+    business: {
+      ...(state.business ?? createDefaultBusinessSettings()),
+      companyName: COMPANY_NAME,
+    },
     savedAt: state.savedAt,
   }
 }

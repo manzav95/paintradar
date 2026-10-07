@@ -1,4 +1,5 @@
 import { colorPaintLines, customerName } from '@/lib/estimateEngine'
+import { COMPANY_NAME } from '@/lib/brand'
 import { formatCents } from '@/lib/money'
 import type { Customer, Estimate, EstimateTotals } from '@/types/sales'
 
@@ -17,7 +18,7 @@ export function prepareEstimateEmail(estimate: Estimate, customer: Customer | un
     '',
     'A signed PDF copy is attached when email delivery is connected. For now you can reply to this message or print the estimate from PaintLedger.',
     '',
-    'Bayline Painting',
+    COMPANY_NAME,
   ].join('\n')
 
   return {

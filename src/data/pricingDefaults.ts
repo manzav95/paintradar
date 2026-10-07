@@ -11,6 +11,7 @@ import type {
   PricingSnapshot,
   RoomScope,
 } from '@/types/sales'
+import { COMPANY_NAME } from '@/lib/brand'
 import { uid } from '@/lib/format'
 
 export const DEFAULT_REPAIR_LEVEL_CENTS: [number, number, number, number, number] = [5000, 7500, 10000, 12500, 15000]
@@ -284,7 +285,7 @@ export function withScopeRates(rates: PricingSnapshot): PricingSnapshot {
 export function createDefaultBusinessSettings(): BusinessSalesSettings {
   return {
     documentTerm: 'Estimate',
-    companyName: 'Bayline Painting',
+    companyName: COMPANY_NAME,
     ownerName: 'Manuel',
     terms:
       'Pricing is tax-included. Booking deposit reserves the schedule. Progress payment is due one week before start. Balance is due upon completion. Minor drywall touch-ups are included. Additional repairs, texture, and specialty finishes are extra unless listed.',

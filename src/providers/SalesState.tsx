@@ -21,6 +21,7 @@ import {
   normalizeColors,
   withScopeRates,
 } from '@/data/pricingDefaults'
+import { COMPANY_NAME } from '@/lib/brand'
 import { uid } from '@/lib/format'
 import { nextDocumentNumber, normalizeLegacyPercent } from '@/lib/money'
 import { loadSalesCloud, saveSalesCloud, isSalesCloudConfigured } from '@/lib/salesCloud'
@@ -160,7 +161,10 @@ export function SalesStateProvider({ children }: { children: ReactNode }) {
   const [payments, setPayments] = useState<PaymentRecord[]>(() => persisted?.payments ?? [])
   const [pricing, setPricing] = useState<PricingSnapshot>(() => persisted?.pricing ?? createDefaultPricing())
   const [catalog, setCatalog] = useState<CatalogMaterial[]>(() => persisted?.catalog ?? createDefaultCatalog())
-  const [business, setBusiness] = useState<BusinessSalesSettings>(() => persisted?.business ?? createDefaultBusinessSettings())
+  const [business, setBusiness] = useState<BusinessSalesSettings>(() => ({
+    ...(persisted?.business ?? createDefaultBusinessSettings()),
+    companyName: COMPANY_NAME,
+  }))
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'pending'>('saved')
   const [syncReady, setSyncReady] = useState(!isSalesCloudConfigured())
   const [cloudSync, setCloudSync] = useState<'cloud' | 'local' | 'offline'>(isSalesCloudConfigured() ? 'cloud' : 'local')
@@ -174,7 +178,7 @@ export function SalesStateProvider({ children }: { children: ReactNode }) {
     setPayments(state.payments)
     setPricing(state.pricing)
     setCatalog(state.catalog)
-    setBusiness(state.business)
+    setBusiness({ ...state.business, companyName: COMPANY_NAME })
   }, [])
 
   useEffect(() => {
@@ -779,7 +783,7 @@ export function SalesStateProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updateBusiness = useCallback((patch: Partial<BusinessSalesSettings>) => {
-    setBusiness((current) => ({ ...current, ...patch }))
+    setBusiness((current) => ({ ...current, ...patch, companyName: COMPANY_NAME }))
   }, [])
 
   const upsertCatalogItem = useCallback((item: CatalogMaterial) => {

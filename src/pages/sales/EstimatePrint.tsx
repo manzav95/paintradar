@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
+import { DocumentBrandHeader } from '@/components/sales/DocumentBrandHeader'
 import { addonPricing, bundledAddonLabel, bundledRoomLabel, cabinetPricing, calculateFromFields, colorPaintLines, customerName, exteriorPricing, paintMaterialLine, paymentSchedule, roomPricing } from '@/lib/estimateEngine'
 import { formatCents } from '@/lib/money'
 import { useSales } from '@/providers/SalesState'
@@ -7,7 +8,8 @@ import { useSales } from '@/providers/SalesState'
 export function EstimatePrint() {
   const { id } = useParams()
   const { estimates, invoices, customers, business } = useSales()
-  const estimate = estimates.find((item) => item.id === id) ?? invoices.find((item) => item.id === id)
+  const invoice = invoices.find((item) => item.id === id)
+  const estimate = estimates.find((item) => item.id === id) ?? invoice
   const customer = customers.find((item) => item.id === estimate?.customerId)
   const totals = useMemo(() => (estimate ? calculateFromFields(estimate) : null), [estimate])
 
@@ -30,19 +32,22 @@ export function EstimatePrint() {
   const paintLine = paintMaterialLine(totals)
 
   return (
-    <div className="print-document min-h-screen bg-[#f6f3eb] px-6 py-8 text-[#1a1406]">
-      <div className="mx-auto max-w-3xl rounded-3xl bg-white p-10 shadow-xl print:shadow-none">
-        <div className="flex items-start justify-between gap-6 border-b border-[#e8d9b0] pb-6">
+    <div className="print-document min-h-screen bg-white px-6 py-8 text-[#111111]">
+      <div className="mx-auto max-w-3xl bg-white p-10 print:p-0">
+        <DocumentBrandHeader
+          documentTitle={invoice ? 'Invoice' : business.documentTerm}
+          subtitle={[
+            'jobName' in estimate && estimate.jobName ? estimate.jobName : null,
+            number,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+          date={estimate.createdAt}
+        />
+        <div className="mt-6 flex items-start justify-between gap-6 border-b border-[#e8d9b0] pb-6 text-sm">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8a6b24]">{business.companyName}</p>
-            <h1 className="mt-1 text-3xl font-semibold">{business.documentTerm}</h1>
-            <p className="text-sm text-[#6d695f]">{'jobName' in estimate && estimate.jobName ? estimate.jobName : number}</p>
-            {'jobName' in estimate && estimate.jobName ? <p className="text-sm text-[#6d695f]">{number}</p> : null}
-          </div>
-          <div className="text-right text-sm">
             <p className="font-semibold">{customer ? customerName(customer.firstName, customer.lastName) : 'Client'}</p>
-            <p>{address}</p>
-            <p>{new Date(estimate.createdAt).toLocaleDateString()}</p>
+            <p className="text-[#6d695f]">{address}</p>
           </div>
         </div>
 

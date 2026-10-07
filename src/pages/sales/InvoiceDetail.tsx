@@ -72,7 +72,7 @@ export function InvoiceDetail() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => navigate(`/sales/jobs/${invoice.estimateId}`)}>Job</Button>
-          <Button onClick={() => window.open(`/sales/estimates/${invoice.estimateId}/print`, '_blank')}>Print / PDF</Button>
+          <Button onClick={() => window.open(`/sales/estimates/${invoice.id}/print`, '_blank')}>Print / PDF</Button>
           <Button
             variant="danger"
             onClick={() => {

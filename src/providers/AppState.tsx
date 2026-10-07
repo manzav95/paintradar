@@ -21,6 +21,7 @@ import { processLead } from '@/services/leads/processLead'
 import { fetchRemoteLeads, saveLead } from '@/services/leads/saveLead'
 import { toDashboardLead } from '@/services/leads/toDashboardLead'
 import { createPipelineSources, scanAllSources } from '@/services/scan/scanAllSources'
+import { COMPANY_NAME } from '@/lib/brand'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import { CATEGORY_LABELS } from '@/types'
 import type {
@@ -360,7 +361,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           merged.homeState = city.state
         }
       }
-      return merged
+      return { ...merged, companyName: COMPANY_NAME }
     })
     if (next.defaultRadius) setRadius(next.defaultRadius)
     if (next.homeCity || next.scoringWeights) {

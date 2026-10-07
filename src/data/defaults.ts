@@ -1,4 +1,5 @@
 import { DEFAULT_HOME } from '@/data/cities'
+import { COMPANY_NAME } from '@/lib/brand'
 import { DEFAULT_WEIGHTS } from '@/lib/scoring'
 import { uid } from '@/lib/format'
 import type { AppSettings, NotificationPreferences, SavedSearch } from '@/types'
@@ -22,10 +23,10 @@ export const DEFAULT_NOTIFICATIONS: NotificationPreferences = {
 }
 
 export function createDefaultSettings(partial?: Partial<AppSettings>): AppSettings {
+  const { companyName: _ignoredCompanyName, ...rest } = partial ?? {}
   return {
     id: 'settings_local',
     ownerName: 'Manuel',
-    companyName: 'Bayline Painting',
     homeCity: DEFAULT_HOME.name,
     homeState: DEFAULT_HOME.state,
     latitude: DEFAULT_HOME.latitude,
@@ -39,7 +40,8 @@ export function createDefaultSettings(partial?: Partial<AppSettings>): AppSettin
     showLeadIntel: false,
     minimumLeadScore: 40,
     createdAt: new Date().toISOString(),
-    ...partial,
+    ...rest,
+    companyName: COMPANY_NAME,
   }
 }
 

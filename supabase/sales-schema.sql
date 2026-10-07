@@ -27,7 +27,7 @@ create table if not exists public.pricing_settings (
 create table if not exists public.business_settings (
   id uuid primary key default gen_random_uuid(),
   document_term text not null default 'Estimate',
-  company_name text not null default 'Bayline Painting',
+  company_name text not null default 'Pacific Coats Painting',
   owner_name text not null default '',
   terms text not null default '',
   updated_at timestamptz not null default now()

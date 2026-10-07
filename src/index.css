@@ -188,5 +188,7 @@ body::before {
   .print-document {
     background: #fff !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
